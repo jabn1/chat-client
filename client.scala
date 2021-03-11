@@ -23,14 +23,19 @@ val commands = Map(
 
 while(!connected){
     val input = readLine("Introduzca su usuario: ")
-    connected = connect(input) == "Ok"
+    val response = connect(input)
+    connected = response == "Ok"
     if(connected){
         user = input
         println("Connectado exitosamente")
         getUsers()
-        println("Connected users: " + in.next())
+        last = "getUsers"
+    }else if(response == "NotValid"){
+        println("Nombre de usuario invalido. Intente nuevamente.")
+    }else if(response == "Full"){
+        println("El chat esta lleno. Intente nuevamente.")
     }else{
-        println("Intentelo nuevamente")
+        println("Intente nuevamente")
     }
 }
 
@@ -41,10 +46,8 @@ val future = Future {
 }
 
 while(true){
-    if(connected){
-        val input = readLine("Mensaje a Enviar (username:message) or (command): ") // username:asdlfjjsssf
-        sendMessage(input)
-    }
+    val input = readLine("Mensaje a Enviar (username:message) o (command): ")
+    sendMessage(input)
 }
 
 def getValue(x: Option[String]) = x match { case Some(s) => s case None => "" }
@@ -53,16 +56,29 @@ def getInput() : Boolean = {
     while(true){
         val next = in.next()
         if(next.slice(0,5) == "/CHAT"){
-            println("\nUser message:" + next)
+            println("\nMensaje de usuario:" + next)
         }else if(last == "getUsers") {
             if (next != "Empty"){
                 println("\nConnected users: " + next)
+            }else if(next == "Empty"){
+                println("No hay usuarios registrados.")
             }
         }else if(last == "logout"){
             if(next == "Ok"){
                 System.exit(0)
+            }else if(next == "Error"){
+                println("\nOcurrio un error en el proceso.")
+            }
+        }else if(last == "chat"){
+            if(next == "Ok"){
+
+            }else if(next == "NotFound"){
+                println("\nUsuario no encontrado.")
+            }else if(next == "Error"){
+                println("\nOcurrio un error en el proceso.")
             }
         }
+        last = null
     }
     return true
 }
@@ -72,7 +88,7 @@ def connect(user: String) : String = {
     out.println(connectCommand)
     out.flush()
 
-    val response = in.next
+    val response = in.next()
 
     return response
 }
